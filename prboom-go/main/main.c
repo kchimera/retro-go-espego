@@ -24,6 +24,8 @@
 #include <doomtype.h>
 #include <doomstat.h>
 #include <doomdef.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <d_main.h>
 #include <g_game.h>
 #include <i_system.h>
@@ -530,6 +532,12 @@ static void options_handler(rg_gui_option_t *dest)
     *dest++ = (rg_gui_option_t)RG_DIALOG_END;
 }
 
+static void doom_task(void *arg)
+{
+    D_DoomMain();
+    vTaskDelete(NULL); // end task when the game exits
+}
+
 void app_main()
 {
     const rg_handlers_t handlers = {
@@ -542,6 +550,11 @@ void app_main()
     };
 
     app = rg_system_init(AUDIO_SAMPLE_RATE, &handlers, NULL);
+
+    // ---- AUTO BOOT WAD ----
+    app->romPath = "/sd/roms/doom/DOOM1.WAD";   // change to whatever you want
+    // --
+
     rg_system_set_tick_rate(TICRATE);
 
     SCREENWIDTH = RG_MIN(rg_display_get_width(), MAX_SCREENWIDTH);
@@ -582,5 +595,9 @@ void app_main()
 #endif
 
     Z_Init();
-    D_DoomMain();
+    // D_DoomMain();
+    // Create a FreeRTOS task for the game itself
+    rg_task_create("doom", &doom_task, NULL,
+                   32 * 1024,   // 32 KB stack, can go higher if needed
+                   RG_TASK_PRIORITY_5, 1);
 }

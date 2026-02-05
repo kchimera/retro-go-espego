@@ -162,17 +162,16 @@ static void lcd_set_backlight(float percent)
 
 static void lcd_set_window(int left, int top, int width, int height)
 {
+    // <-- magic glass offset
+    top += 34;
+
     int right = left + width - 1;
     int bottom = top + height - 1;
-
-    if (left < 0 || top < 0 || right >= display.screen.real_width || bottom >= display.screen.real_height)
-        RG_LOGW("Bad lcd window (x0=%d, y0=%d, x1=%d, y1=%d)\n", left, top, right, bottom);
 
     ILI9341_CMD(0x2A, left >> 8, left & 0xff, right >> 8, right & 0xff); // Horiz
     ILI9341_CMD(0x2B, top >> 8, top & 0xff, bottom >> 8, bottom & 0xff); // Vert
     ILI9341_CMD(0x2C);                                                   // Memory write
 }
-
 static inline uint16_t *lcd_get_buffer(size_t length)
 {
     // RG_ASSERT_ARG(length < LCD_BUFFER_LENGTH);

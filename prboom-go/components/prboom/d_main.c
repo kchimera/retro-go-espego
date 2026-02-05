@@ -564,8 +564,19 @@ bool D_AddFile(const char *file)
   }
 #endif
 
-  wadfiles[numwadfiles++] = wadfile;
-  return true;
+  // Force load WAD into memory (Retro-Go requirement)
+if (!wadfile.data) {
+    if (rg_storage_read_file(file, (void **)&wadfile.data, &wadfile.size, 0)) {
+        lprintf(LO_INFO, "Loaded WAD into memory: %s (%d bytes)\n", file, wadfile.size);
+    } else {
+        lprintf(LO_ERROR, "Failed to load WAD into memory: %s\n", file);
+        return false;
+    }
+}
+
+wadfile.handle = NULL;  // IMPORTANT: prevent any fread/fseek usage
+wadfiles[numwadfiles++] = wadfile;
+return true;
 }
 
 //

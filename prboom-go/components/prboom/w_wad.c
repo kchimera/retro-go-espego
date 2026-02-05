@@ -138,8 +138,11 @@ static void W_AddFile(wadfile_info_t *wadfile)
     }
   }
 
-  if (!wadfile->handle && !wadfile->data)
-    I_Error("W_AddFile: couldn't open %s", wadfile->name);
+  if (!wadfile->handle && !wadfile->data) {
+    lprintf(LO_WARN, "W_AddFile: skipping non-wad path %s\n", wadfile->name);
+    return;
+}
+
 
   W_Read(&header, sizeof(header), 0, wadfile);
 
